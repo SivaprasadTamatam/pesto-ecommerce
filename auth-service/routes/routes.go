@@ -11,6 +11,7 @@ import (
 func Setup(r *gin.Engine) {
 	r.POST("/register", controllers.Register)
 	r.POST("/login", controllers.Login)
+	r.GET("/verify-token", controllers.VerifyToken)
 
 	protected := r.Group("/protected")
 	protected.Use(middleware.AuthMiddleware())
