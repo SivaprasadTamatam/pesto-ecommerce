@@ -1,10 +1,13 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 	"pesto-ecommerce/auth-service/models"
 	"pesto-ecommerce/auth-service/utils"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -52,4 +55,35 @@ func Login(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"token": token})
+}
+
+func VerifyToken(c *gin.Context) {
+	tokenString := c.GetHeader("Authorization")
+
+	if tokenString == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "No token provided"})
+		return
+	}
+
+	tokenString = tokenString[len("Bearer "):]
+
+	secretKey := os.Getenv("JWT_SECRET")
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(secretKey), nil
+	})
+
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		return
+	}
+
+	if !token.Valid {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Token is valid"})
 }
