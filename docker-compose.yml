@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+  auth-service:
+    build:
+      context: ./auth-service
+    ports:
+      - "8080:8080"
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./auth-service/test.db:/root/test.db
+
+  product-service:
+    build:
+      context: ./product-service
+    ports:
+      - "8081:8081"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+    volumes:
+      - ./product-service/test.db:/root/test.db
+
+  order-service:
+    build:
+      context: ./order-service
+    ports:
+      - "8082:8082"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+    volumes:
+      - ./order-service/test.db:/root/test.db
